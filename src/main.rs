@@ -2,6 +2,7 @@ use std::thread;
 use std::cmp;
 use std::sync::mpsc;
 use std::sync::{Mutex,Arc};
+use rayon::prelude::*;
 fn main() {
     println!("Hello concurrent world!");
 
@@ -18,6 +19,23 @@ fn main() {
     };
 
     println!("Sequential sum of input vector is {}", sum() );
+
+
+    let input_cloned = input_guarded.lock().unwrap().to_vec();
+    //let sum_vec : Vec<u32> =  input_cloned.into_iter().map(|x| -> u32 {println!("El: {}", x); sum_map+=x; sum_map}).collect();
+    let mut sum_map : u32 = 0;
+    input_cloned.iter().for_each(|x| sum_map+=x);
+    //let sum_map : u32  = input_cloned.iter().sum();
+    
+
+    println!("Sequential sum using iterators of input vector is {}", sum_map );
+
+    let sum_par : u32 = input_cloned.par_iter().sum();
+    println!("Parallel sum using iterators of input vector is {}", sum_par );
+
+    //let sum_doubled : u32 = input_cloned.par_iter().map(|x| x*2).sum(); 
+
+    //println!("Parallel double sum using iterators of input vector is {}", sum_doubled );
 
     let (tx, rx) = mpsc::channel();
 
